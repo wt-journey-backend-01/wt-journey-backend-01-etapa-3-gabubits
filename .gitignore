@@ -1,3 +1,4 @@
 node_modules
 scripts
 comandos.txt
+.env
