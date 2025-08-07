@@ -1,7 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
 import db from "../db/db.js";
-
-const agentesRepository = [];
 
 // GET /agentes
 export async function obterTodosAgentes() {
