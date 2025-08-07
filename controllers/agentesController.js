@@ -119,7 +119,13 @@ export async function criarAgente(req, res, next) {
     }
 
     const resultado = await agentesRepository.adicionarAgente(body_parse.data);
-    res.status(201).json(resultado);
+
+    res.status(201).json({
+      ...resultado,
+      dataDeIncorporacao: resultado.dataDeIncorporacao
+        .toISOString()
+        .split("T")[0],
+    });
   } catch (e) {
     next(e);
   }
@@ -164,7 +170,12 @@ export async function atualizarAgente(req, res, next) {
         id: `O ID '${id_parse.data.id}' não existe nos agentes`,
       });
 
-    res.status(200).json(agente_atualizado);
+    res.status(200).json({
+      ...agente_atualizado,
+      dataDeIncorporacao: agente_atualizado.dataDeIncorporacao
+        .toISOString()
+        .split("T")[0],
+    });
   } catch (e) {
     next(e);
   }
