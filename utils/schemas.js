@@ -39,7 +39,7 @@ export const baseDateSchema = (fieldName) => ({
           return `Campo ${fieldName} não representa uma data válida`;
       },
     })
-    .transform((date) => date + "T00:00:00")
+    .transform((date) => date + "T00:00:00.000Z")
     .refine(
       (date) => new Date(date) <= new Date(),
       `Campo ${fieldName} não representa uma data válida`
@@ -94,7 +94,15 @@ export const casoSchema = z.object(
     ...baseStringSchema("titulo"),
     ...baseStringSchema("descricao"),
     ...baseEnumSchema("status", ["aberto", "solucionado"]),
-    ...baseIdSchema("agente_id"),
+    agente_id: z
+      .int({
+        error: (issue) => {
+          if (!issue.input) return `agente_id é um campo obrigatório.`;
+          if (issue.code === "invalid_type")
+            return `agente_id deve ser um número inteiro.`;
+        },
+      })
+      .min(1, "agente_id deve ser um número inteiro positivo"),
   },
   {
     error: (issue) => {
