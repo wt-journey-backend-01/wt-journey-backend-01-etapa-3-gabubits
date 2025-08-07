@@ -1,79 +1,47 @@
 import { v4 as uuidv4 } from "uuid";
+import db from "../db/db.js";
 
 const agentesRepository = [];
 
 // GET /agentes
-export function obterTodosAgentes() {
-  return agentesRepository;
+export async function obterTodosAgentes() {
+  return await db("agentes");
 }
 
 // GET /agentes/:id
-export function obterUmAgente(id) {
-  return agentesRepository.find((agente) => agente.id === id);
+export async function obterUmAgente(id) {
+  return await db("agentes").where({ id }).first();
 }
 
 // GET /agentes?cargo=inspetor
-export function obterAgentesDoCargo(cargo) {
-  return agentesRepository.filter(
-    (agente) => agente.cargo.toLowerCase() === cargo.toLowerCase()
-  );
+export async function obterAgentesDoCargo(cargo) {
+  return await db("agentes").whereILike("cargo", cargo);
 }
 
 // GET /agentes?sort=dataDeIncorporacao
-export function obterAgentesOrdenadosPorDataIncorpAsc() {
-  const agentes_copia = agentesRepository.slice();
-  const agentes_ordenados = agentes_copia.sort((agente1, agente2) => {
-    const dIncorpA1 = new Date(agente1.dataDeIncorporacao).getTime();
-    const dIncorpA2 = new Date(agente2.dataDeIncorporacao).getTime();
-
-    return dIncorpA1 - dIncorpA2;
-  });
-
-  return agentes_ordenados;
+export async function obterAgentesOrdenadosPorDataIncorpAsc() {
+  return await db("agentes").orderBy("dataDeIncorporacao", "asc");
 }
 
 // GET /agentes?sort=dataDeIncorporacao
-export function obterAgentesOrdenadosPorDataIncorpDesc() {
-  const agentes_copia = agentesRepository.slice();
-  const agentes_ordenados = agentes_copia.sort((agente1, agente2) => {
-    const dIncorpA1 = new Date(agente1.dataDeIncorporacao).getTime();
-    const dIncorpA2 = new Date(agente2.dataDeIncorporacao).getTime();
-
-    return dIncorpA2 - dIncorpA1;
-  });
-
-  return agentes_ordenados;
+export async function obterAgentesOrdenadosPorDataIncorpDesc() {
+  return await db("agentes").orderBy("dataDeIncorporacao", "desc");
 }
 
 // POST /agentes
-export function adicionarAgente(dados) {
-  const index_ultimo = agentesRepository.push({ id: uuidv4(), ...dados });
-  return agentesRepository[index_ultimo - 1];
+export async function adicionarAgente(dados) {
+  const result = await db("agentes").insert(dados, "*");
+  return result.length ? result[0] : undefined;
 }
 
 // PUT /agentes/:id | PATCH /agentes/:id
-export function atualizarAgente(id, dados) {
-  const index_agente = agentesRepository.findIndex(
-    (agente) => agente.id === id
-  );
-
-  if (index_agente === -1) return undefined;
-
-  for (const chave of Object.keys(dados)) {
-    if (chave !== "id") agentesRepository[index_agente][chave] = dados[chave];
-  }
-
-  return agentesRepository[index_agente];
+export async function atualizarAgente(id, dados) {
+  const result = await db("agentes").where({ id }).update(dados, "*");
+  return result.length ? result[0] : undefined;
 }
 
 // DELETE /agentes/:id
-export function apagarAgente(id) {
-  const index_agente = agentesRepository.findIndex(
-    (agente) => agente.id === id
-  );
-
-  if (index_agente === -1) return false;
-
-  agentesRepository.splice(index_agente, 1);
-  return true;
+export async function apagarAgente(id) {
+  const result = await db("agentes").where({ id }).del("*");
+  return result.length ? true : false;
 }

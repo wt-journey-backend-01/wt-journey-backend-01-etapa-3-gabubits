@@ -1,5 +1,4 @@
 import * as agentesRepository from "../repositories/agentesRepository.js";
-import { apagarCasosDeAgente } from "../repositories/casosRepository.js";
 import * as Errors from "../utils/errorHandler.js";
 import {
   agentePatchSchema,
@@ -9,20 +8,23 @@ import {
 } from "../utils/schemas.js";
 import { z } from "zod";
 
-export function obterAgentes(req, res, next) {
+export async function obterAgentes(req, res, next) {
   if (req.query.cargo || req.query.sort) return next();
-  res.status(200).json(agentesRepository.obterTodosAgentes());
+  const dados = await agentesRepository.obterTodosAgentes();
+  res.status(200).json(dados);
 }
 // GET /agentes | GET /agentes?cargo | GET /agentes?sort
-export function obterAgentesCargo(req, res, next) {
+export async function obterAgentesCargo(req, res, next) {
   if (!req.query.cargo) return next();
 
   const cargo = req.query.cargo;
-  const agentes_encontrados = agentesRepository.obterAgentesDoCargo(cargo);
+  const agentes_encontrados = await agentesRepository.obterAgentesDoCargo(
+    cargo
+  );
   res.status(200).json(agentes_encontrados);
 }
 
-export function obterAgentesSort(req, res, next) {
+export async function obterAgentesSort(req, res, next) {
   if (!req.query.sort) return next();
   try {
     const sort_parse = sortSchema.safeParse(req.query);
@@ -38,12 +40,12 @@ export function obterAgentesSort(req, res, next) {
 
     if (sort === 1) {
       agentes_encontrados =
-        agentesRepository.obterAgentesOrdenadosPorDataIncorpAsc();
+        await agentesRepository.obterAgentesOrdenadosPorDataIncorpAsc();
     }
 
     if (sort === -1) {
       agentes_encontrados =
-        agentesRepository.obterAgentesOrdenadosPorDataIncorpDesc();
+        await agentesRepository.obterAgentesOrdenadosPorDataIncorpDesc();
     }
 
     res.status(200).json(agentes_encontrados);
@@ -53,7 +55,7 @@ export function obterAgentesSort(req, res, next) {
 }
 
 // GET /agentes/:id
-export function obterUmAgente(req, res, next) {
+export async function obterUmAgente(req, res, next) {
   try {
     const id_parse = idSchema.safeParse(req.params);
 
@@ -62,7 +64,9 @@ export function obterUmAgente(req, res, next) {
         z.flattenError(id_parse.error).fieldErrors
       );
 
-    const agente_encontrado = agentesRepository.obterUmAgente(id_parse.data.id);
+    const agente_encontrado = await agentesRepository.obterUmAgente(
+      id_parse.data.id
+    );
 
     if (!agente_encontrado)
       throw new Errors.IdNotFoundError({
@@ -76,7 +80,7 @@ export function obterUmAgente(req, res, next) {
 }
 
 // POST /agentes
-export function criarAgente(req, res, next) {
+export async function criarAgente(req, res, next) {
   try {
     const body_parse = agenteSchema.safeParse(req.body);
 
@@ -88,14 +92,15 @@ export function criarAgente(req, res, next) {
       });
     }
 
-    res.status(201).json(agentesRepository.adicionarAgente(body_parse.data));
+    const resultado = await agentesRepository.adicionarAgente(body_parse.data);
+    res.status(201).json(resultado);
   } catch (e) {
     next(e);
   }
 }
 
 // PUT /agentes/:id | PATCH /agentes/:id
-export function atualizarAgente(req, res, next) {
+export async function atualizarAgente(req, res, next) {
   try {
     if (req.body.id && req.body.id !== req.params.id)
       throw new Errors.InvalidFormatError({
@@ -123,7 +128,7 @@ export function atualizarAgente(req, res, next) {
 
     delete body_parse.data.id;
 
-    const agente_atualizado = agentesRepository.atualizarAgente(
+    const agente_atualizado = await agentesRepository.atualizarAgente(
       id_parse.data.id,
       body_parse.data
     );
@@ -140,7 +145,7 @@ export function atualizarAgente(req, res, next) {
 }
 
 // DELETE /agentes/:id
-export function apagarAgente(req, res, next) {
+export async function apagarAgente(req, res, next) {
   try {
     const id_parse = idSchema.safeParse(req.params);
 
@@ -149,14 +154,15 @@ export function apagarAgente(req, res, next) {
         z.flattenError(id_parse.error).fieldErrors
       );
 
-    const agente_apagado = agentesRepository.apagarAgente(id_parse.data.id);
+    const agente_apagado = await agentesRepository.apagarAgente(
+      id_parse.data.id
+    );
 
     if (!agente_apagado)
       throw new Errors.IdNotFoundError({
         id: `O ID '${id_parse.data.id}' não existe nos agentes`,
       });
 
-    apagarCasosDeAgente(id_parse.data.id);
     res.sendStatus(204);
   } catch (e) {
     next(e);
