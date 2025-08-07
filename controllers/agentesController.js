@@ -1,4 +1,5 @@
 import * as agentesRepository from "../repositories/agentesRepository.js";
+import { obterCasosDeUmAgente } from "../repositories/casosRepository.js";
 import * as Errors from "../utils/errorHandler.js";
 import {
   agentePatchSchema,
@@ -74,6 +75,31 @@ export async function obterUmAgente(req, res, next) {
       });
 
     res.status(200).json(agente_encontrado);
+  } catch (e) {
+    next(e);
+  }
+}
+
+// GET /agentes/:id/casos
+export async function obterCasosDoAgente(req, res, next) {
+  try {
+    const id_parse = idSchema.safeParse(req.params);
+    if (!id_parse.success)
+      throw new Errors.InvalidIdError(
+        z.flattenError(id_parse.error).fieldErrors
+      );
+
+    const agente_encontrado = await agentesRepository.obterUmAgente(
+      id_parse.data.id
+    );
+
+    if (!agente_encontrado)
+      throw new Errors.IdNotFoundError({
+        id: `O ID '${id_parse.data.id}' não existe nos agentes`,
+      });
+
+    const casos_encontrados = await obterCasosDeUmAgente(id_parse.data.id);
+    res.status(200).json(casos_encontrados);
   } catch (e) {
     next(e);
   }

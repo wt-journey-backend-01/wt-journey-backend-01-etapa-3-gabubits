@@ -12,6 +12,8 @@ router.get(
 
 router.get("/:id", agentesController.obterUmAgente);
 
+router.get("/:id/casos", agentesController.obterCasosDoAgente);
+
 router.post("/", agentesController.criarAgente);
 
 router.put("/:id", agentesController.atualizarAgente);
