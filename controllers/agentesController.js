@@ -70,7 +70,7 @@ export async function obterUmAgente(req, res, next) {
 
     if (!agente_encontrado)
       throw new Errors.IdNotFoundError({
-        id: `O ID '${id}' não existe nos agentes`,
+        id: `O ID '${id_parse.data.id}' não existe nos agentes`,
       });
 
     res.status(200).json(agente_encontrado);
