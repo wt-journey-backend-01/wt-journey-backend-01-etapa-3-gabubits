@@ -2,3 +2,6 @@ node_modules
 scripts
 comandos.txt
 .env
+teste.js
+docs
+docker-compose.yml
