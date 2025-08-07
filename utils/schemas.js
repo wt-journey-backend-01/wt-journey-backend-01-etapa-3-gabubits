@@ -39,9 +39,8 @@ export const baseDateSchema = (fieldName) => ({
           return `Campo ${fieldName} não representa uma data válida`;
       },
     })
-    .transform((date) => date + "T00:00:00.000Z")
     .refine(
-      (date) => new Date(date) <= new Date(),
+      (date) => new Date(date + "T00:00:00.000Z") <= new Date(),
       `Campo ${fieldName} não representa uma data válida`
     ),
 });
