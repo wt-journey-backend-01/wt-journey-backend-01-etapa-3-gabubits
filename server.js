@@ -1,6 +1,7 @@
 import express from "express";
 import agentesRoutes from "./routes/agentesRoutes.js";
 import casosRoutes from "./routes/casosRoutes.js";
+import { errorHandler, NotFoundRouteError } from "./utils/errorHandler.js";
 
 const app = express();
 const PORT = 3000;
