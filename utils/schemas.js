@@ -1,12 +1,15 @@
 import { z } from "zod";
 
 const baseIdSchema = (id = "id") => ({
-  [id]: z.uuidv4({
-    error: (issue) =>
-      issue.input === undefined
-        ? `'${id}' é obrigatório.`
-        : `'${issue.input}' não representa um UUID válido.`,
-  }),
+  [id]: z
+    .string({
+      error: (issue) => {
+        if (!issue.input) return `${id} é um campo obrigatório.`;
+      },
+    })
+    .min(1, `${id} não pode ser vazio`)
+    .regex(/^[1-9]\d*$/, `${id} deve ser um número inteiro positivo`)
+    .transform((value) => Number(value)),
 });
 
 export const idSchema = z.object(baseIdSchema());
@@ -25,7 +28,7 @@ const baseStringSchema = (fieldName) => ({
     .min(1, `${fieldName} não pode ser vazio`),
 });
 
-const baseDateSchema = (fieldName) => ({
+export const baseDateSchema = (fieldName) => ({
   [fieldName]: z.iso
     .date({
       error: (issue) => {
@@ -36,8 +39,9 @@ const baseDateSchema = (fieldName) => ({
           return `Campo ${fieldName} não representa uma data válida`;
       },
     })
+    .transform((date) => date + "T00:00:00")
     .refine(
-      (date) => new Date(date + "T00:00:00") <= new Date(),
+      (date) => new Date(date) <= new Date(),
       `Campo ${fieldName} não representa uma data válida`
     ),
 });
